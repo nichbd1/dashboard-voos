@@ -311,6 +311,7 @@ namespace DashboardVoos
                 System.Windows.Forms.MessageBox.Show("Importação executada com sucesso.");
                 PopularDropdown(voos);
             }
+            pastaSelecionada = string.Empty;
         }
 
         private void graficoSituacao_MouseMove(object sender, MouseEventArgs e)
