@@ -82,7 +82,6 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "Para inicializar a criação do dashboard, clique no botão Importar e selecione a p" +
     "asta onde os arquivos se encontram.";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // buttonImportar
             // 

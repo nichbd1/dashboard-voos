@@ -56,22 +56,25 @@ namespace DashboardVoos
             backgroundWorker1.WorkerReportsProgress = true;
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void buttonImportar_Click(object sender, EventArgs e)
         {
             importacao.Maximum = 100;
             importacao.Step = 1;
             importacao.Value = 0;
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.InitialDirectory = "C:\\Users";
-            dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            MessageBox.Show(@"Para o arquivo ser aceito pelo dashboard, ele deve cumprir os seguintes critérios:
+- Conter as colunas ""ICAO Empresa Aérea"", ""Número Voo"", ""Código Autorização (DI)"", ""Código Tipo Linha"", ""ICAO Aeródromo Origem"", ""ICAO Aeródromo Destino"", ""Partida Prevista"", ""Partida Real"", ""Chegada Prevista"", ""Chegada Real"",""Situação Voo"" e ""Código Justificativa"", nessa ordem. 
+- Não é necessário o cabecalho da tabela ter estes nomes, mas é necessário que sejam essas informações.
+- Pode conter a coluna opcional ""Data Prevista"", desde que entre ""Partida Prevista"" e ""Partida Real"".
+- Deve estar nos formatos "".xlsx"" ou "".csv"".
+- Qualquer arquivo que não atenda aos critérios na pasta selecionada cancelará o processo de importação.");
+
+            CommonOpenFileDialog dialogPasta = new CommonOpenFileDialog();
+            dialogPasta.InitialDirectory = "C:\\Users";
+            dialogPasta.IsFolderPicker = true;
+            if (dialogPasta.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                pastaSelecionada = dialog.FileName;
+                pastaSelecionada = dialogPasta.FileName;
             }
             backgroundWorker1.RunWorkerAsync();
             return;
@@ -146,26 +149,49 @@ namespace DashboardVoos
 
         private void GerarGrafico_Click(object sender, EventArgs e)
         {
-            label2.Visible = true;
-            List<InformacoesVoos> voosDentroData = voos.FindAll(x => x.partidaPrevista >= dataInicial.Value && x.partidaPrevista <= dataFinal.Value);
-            chart1.Visible = true;
-            chart2.Visible = true;
-            chart3.Visible = true;
-            chart4.Visible = true;
-            chart5.Visible = true;
-            chart6.Visible = true;
-            chart1.Series["Empresa Aérea"].Points.Clear();
-            chart2.Series["Dia do mês"].Points.Clear();
-            chart3.Series["Situação"].Points.Clear();
-            chart4.Series["Quantidade de voos"].Points.Clear();
-            chart5.Series["Quantidade de voos"].Points.Clear();
-            chart6.Series["Voos por Aeroporto"].Points.Clear();
-            PopularGrafico1(voosDentroData);
-            PopularGrafico2(voosDentroData);
-            PopularGrafico3(voosDentroData);
-            PopularGrafico4(voosDentroData);
-            PopularGrafico5(voosDentroData);
-            PopularGrafico6(voosDentroData);
+            try
+            {
+                List<InformacoesVoos> voosDentroData = new List<InformacoesVoos>();
+                if (dataInicial.Value > dataFinal.Value.AddMinutes(1))
+                {
+                    throw new Exception("A data inicial selecionada é maior que a data final.");
+                }
+                else
+                {
+                    if (voos.Count == 0)
+                    {
+                        throw new Exception("É necessário importar os dados para gerar os gráficos.");
+                    }
+                    voosDentroData = voos.FindAll(x => x.partidaPrevista >= dataInicial.Value && x.partidaPrevista <= dataFinal.Value);
+                    if (voosDentroData.Count == 0)
+                    {
+                        throw new Exception("Não existiram voos no período selecionado.");
+                    }
+                }
+                label2.Visible = true;
+                chart1.Visible = true;
+                chart2.Visible = true;
+                chart3.Visible = true;
+                chart4.Visible = true;
+                chart5.Visible = true;
+                chart6.Visible = true;
+                chart1.Series["Empresa Aérea"].Points.Clear();
+                chart2.Series["Dia do mês"].Points.Clear();
+                chart3.Series["Situação"].Points.Clear();
+                chart4.Series["Quantidade de voos"].Points.Clear();
+                chart5.Series["Quantidade de voos"].Points.Clear();
+                chart6.Series["Voos por Aeroporto"].Points.Clear();
+                PopularGrafico1(voosDentroData);
+                PopularGrafico2(voosDentroData);
+                PopularGrafico3(voosDentroData);
+                PopularGrafico4(voosDentroData);
+                PopularGrafico5(voosDentroData);
+                PopularGrafico6(voosDentroData);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void PopularGrafico6(List<InformacoesVoos> voosDentroData)
@@ -210,34 +236,41 @@ namespace DashboardVoos
             }
             else
             {
-                LabelResult.ForeColor = Color.Green;
-                LabelResult.Text = "A pasta requisitada não foi criada.";
-                return;
+                throw new Exception("A pasta não foi selecionada.");
             }
             var backgroundWorker = sender as BackgroundWorker;
+            if(fileEntries.Length == 0)
+            {
+                throw new Exception("A pasta selecionada está vazia.");
+            }
             foreach (string file in fileEntries)
             {
-                i++;
-                if (file.EndsWith(".csv"))
-                {
-                    voos.AddRange(File.ReadAllLines(file)
-                                .Skip(1)
-                                .Select(v => InformacoesVoos.FromCsv(v))
-                                .ToList());
-                }
-                else if (file.EndsWith(".xlsx"))
-                {
-                    
-                    using (ExcelPackage xlPackage = new ExcelPackage(new System.IO.FileInfo(file)))
+                try {
+                    i++;
+                    if (file.EndsWith(".csv"))
                     {
-                        
-                        // get the first worksheet in the workbook
-                        ExcelWorksheet worksheet = xlPackage.Workbook.Worksheets[0];
-                        voos.AddRange(InformacoesVoos.FromXlsx(worksheet));
+                        voos.AddRange(File.ReadAllLines(file)
+                                    .Skip(1)
+                                    .Select(v => InformacoesVoos.FromCsv(v))
+                                    .ToList());
                     }
-                }
-                backgroundWorker.ReportProgress((i * 100) / fileEntries.Length);
+                    else if (file.EndsWith(".xlsx"))
+                    {
 
+                        using (ExcelPackage xlPackage = new ExcelPackage(new System.IO.FileInfo(file)))
+                        {
+
+                            // get the first worksheet in the workbook
+                            ExcelWorksheet worksheet = xlPackage.Workbook.Worksheets[0];
+                            voos.AddRange(InformacoesVoos.FromXlsx(worksheet));
+                        }
+                    }
+                    backgroundWorker.ReportProgress((i * 100) / fileEntries.Length);
+                }
+                catch
+                {
+                    throw new Exception("O arquivo " + file + " não está dentro dos padrões necessários.");
+                }
             }
         }
 
