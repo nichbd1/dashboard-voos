@@ -93,7 +93,7 @@ namespace DashboardVoos
             })
             .OrderBy(x => x.Metric))
             {
-                if(!string.IsNullOrWhiteSpace(line.Metric)) comboBox1.Items.Add(line.Metric);
+                if (!string.IsNullOrWhiteSpace(line.Metric)) comboBox1.Items.Add(line.Metric);
             };
         }
 
@@ -102,7 +102,7 @@ namespace DashboardVoos
             importacao.Value = e.ProgressPercentage;
         }
 
-        private void PopularGrafico1(List<InformacoesVoos> voosDentroData)
+        private void PopularGraficoVoosPorEmpresa(List<InformacoesVoos> voosDentroData)
         {
             foreach (var line in voosDentroData.GroupBy(info => info.ICAOEmpresaAerea)
                         .Select(group => new
@@ -117,7 +117,7 @@ namespace DashboardVoos
             graficoVoosPorEmpresa.ChartAreas["ChartArea1"].AxisX.Interval = 1;
         }
 
-        private void PopularGrafico2(List<InformacoesVoos> voosDentroData)
+        private void PopularGraficoDiaDoMes(List<InformacoesVoos> voosDentroData)
         {
             foreach (var line in voosDentroData.GroupBy(info => info.partidaReal.Day)
                         .Select(group => new
@@ -131,7 +131,7 @@ namespace DashboardVoos
             };
             graficoDiaDoMes.ChartAreas["ChartArea1"].AxisX.Interval = 1;
         }
-        private void PopularGrafico5(List<InformacoesVoos> voosDentroData)
+        private void PopularGraficoAtrasoChegada(List<InformacoesVoos> voosDentroData)
         {
             foreach (var line in voosDentroData.GroupBy(info => info.atrasoChegada)
                         .Select(group => new
@@ -146,7 +146,7 @@ namespace DashboardVoos
             graficoAtrasoChegada.ChartAreas["ChartArea1"].AxisX.Interval = 1;
         }
 
-        private void PopularGrafico3(List<InformacoesVoos> voosDentroData)
+        private void PopularGraficoSituacao(List<InformacoesVoos> voosDentroData)
         {
 
             foreach (var line in voosDentroData.GroupBy(info => info.situacaoVoo)
@@ -205,21 +205,21 @@ namespace DashboardVoos
                 graficoAtrasoPartida.Series["Quantidade de voos"].Points.Clear();
                 graficoAtrasoChegada.Series["Quantidade de voos"].Points.Clear();
                 graficoVoosPorAeroporto.Series["Voos por Aeroporto"].Points.Clear();
-                PopularGrafico1(voosDentroData);
-                PopularGrafico2(voosDentroData);
-                PopularGrafico3(voosDentroData);
-                PopularGrafico4(voosDentroData);
-                PopularGrafico5(voosDentroData);
-                PopularGrafico6(voosDentroData);
+                PopularGraficoVoosPorEmpresa(voosDentroData);
+                PopularGraficoDiaDoMes(voosDentroData);
+                PopularGraficoSituacao(voosDentroData);
+                PopularGraficoAtrasoPartida(voosDentroData);
+                PopularGraficoAtrasoChegada(voosDentroData);
+                PopularGraficoVoosPorAeroporto(voosDentroData);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
             this.UseWaitCursor = false;
         }
 
-        private void PopularGrafico6(List<InformacoesVoos> voosDentroData)
+        private void PopularGraficoVoosPorAeroporto(List<InformacoesVoos> voosDentroData)
         {
             foreach (var line in voosDentroData.GroupBy(info => info.ICAOAerodromoOrigem)
                         .Select(group => new
@@ -235,7 +235,7 @@ namespace DashboardVoos
             graficoVoosPorAeroporto.Series["Voos por Aeroporto"]["PieLabelStyle"] = "Disabled";
         }
 
-        private void PopularGrafico4(List<InformacoesVoos> voosDentroData)
+        private void PopularGraficoAtrasoPartida(List<InformacoesVoos> voosDentroData)
         {
             foreach (var line in voosDentroData.GroupBy(info => info.atrasoPartida)
             .Select(group => new
@@ -264,13 +264,14 @@ namespace DashboardVoos
                 throw new Exception("A pasta não foi selecionada.");
             }
             var backgroundWorker = sender as BackgroundWorker;
-            if(fileEntries.Length == 0)
+            if (fileEntries.Length == 0)
             {
                 throw new Exception("A pasta selecionada está vazia.");
             }
             foreach (string file in fileEntries)
             {
-                try {
+                try
+                {
                     i++;
                     if (file.EndsWith(".csv"))
                     {
@@ -425,6 +426,8 @@ namespace DashboardVoos
                 firstClick = true;
                 labelFechar.Visible = false;
             }
+            var results = graficoAtrasoPartida.HitTest(((System.Windows.Forms.MouseEventArgs)e).X, ((System.Windows.Forms.MouseEventArgs)e).Y, false,
+                    ChartElementType.LegendItem);
         }
 
         private void graficoVoosPorEmpresa_Click(object sender, EventArgs e)
