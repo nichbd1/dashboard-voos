@@ -28,6 +28,9 @@ namespace DashboardVoos
         {
             firstClick = true;
             InitializeComponent();
+            comboBox1.Items.Add("Todas");
+            comboBox1.SelectedItem = "Todas";
+            comboBox1.SelectedText = "Todas";
             label2.Visible = false;
             labelFechar.Visible = false;
             this.MinimumSize = this.Size;
@@ -80,6 +83,19 @@ namespace DashboardVoos
             return;
         }
 
+        private void PopularDropdown(List<InformacoesVoos> voos)
+        {
+            foreach (var line in voos.GroupBy(info => info.ICAOEmpresaAerea)
+            .Select(group => new
+            {
+                Metric = group.Key,
+                Count = group.Count()
+            })
+            .OrderBy(x => x.Metric))
+            {
+                if(!string.IsNullOrWhiteSpace(line.Metric)) comboBox1.Items.Add(line.Metric);
+            };
+        }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
@@ -151,6 +167,7 @@ namespace DashboardVoos
         {
             try
             {
+                this.UseWaitCursor = true;
                 List<InformacoesVoos> voosDentroData = new List<InformacoesVoos>();
                 if (dataInicial.Value > dataFinal.Value.AddMinutes(1))
                 {
@@ -162,7 +179,14 @@ namespace DashboardVoos
                     {
                         throw new Exception("É necessário importar os dados para gerar os gráficos.");
                     }
-                    voosDentroData = voos.FindAll(x => x.partidaPrevista >= dataInicial.Value && x.partidaPrevista <= dataFinal.Value);
+                    if (comboBox1.Text != "Todas")
+                    {
+                        voosDentroData = voos.FindAll(x => x.partidaPrevista >= dataInicial.Value && x.partidaPrevista <= dataFinal.Value && x.ICAOEmpresaAerea == comboBox1.Text);
+                    }
+                    else
+                    {
+                        voosDentroData = voos.FindAll(x => x.partidaPrevista >= dataInicial.Value && x.partidaPrevista <= dataFinal.Value);
+                    }
                     if (voosDentroData.Count == 0)
                     {
                         throw new Exception("Não existiram voos no período selecionado.");
@@ -192,6 +216,7 @@ namespace DashboardVoos
             {
                 MessageBox.Show(ex.Message);
             }
+            this.UseWaitCursor = false;
         }
 
         private void PopularGrafico6(List<InformacoesVoos> voosDentroData)
@@ -283,6 +308,7 @@ namespace DashboardVoos
             else
             {
                 System.Windows.Forms.MessageBox.Show("Importação executada com sucesso.");
+                PopularDropdown(voos);
             }
         }
 

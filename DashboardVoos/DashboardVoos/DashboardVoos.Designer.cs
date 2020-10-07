@@ -64,6 +64,8 @@
             this.labelFechar = new System.Windows.Forms.Label();
             this.chart5 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.chart6 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart3)).BeginInit();
@@ -122,14 +124,14 @@
             // 
             // dataInicial
             // 
-            this.dataInicial.Location = new System.Drawing.Point(489, 52);
+            this.dataInicial.Location = new System.Drawing.Point(374, 52);
             this.dataInicial.Name = "dataInicial";
             this.dataInicial.Size = new System.Drawing.Size(231, 20);
             this.dataInicial.TabIndex = 4;
             // 
             // dataFinal
             // 
-            this.dataFinal.Location = new System.Drawing.Point(826, 52);
+            this.dataFinal.Location = new System.Drawing.Point(711, 52);
             this.dataFinal.Name = "dataFinal";
             this.dataFinal.Size = new System.Drawing.Size(228, 20);
             this.dataFinal.TabIndex = 5;
@@ -138,7 +140,7 @@
             // 
             this.labelDataInicial.AutoSize = true;
             this.labelDataInicial.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F);
-            this.labelDataInicial.Location = new System.Drawing.Point(402, 53);
+            this.labelDataInicial.Location = new System.Drawing.Point(287, 53);
             this.labelDataInicial.Name = "labelDataInicial";
             this.labelDataInicial.Size = new System.Drawing.Size(83, 18);
             this.labelDataInicial.TabIndex = 6;
@@ -148,7 +150,7 @@
             // 
             this.labelDataFinal.AutoSize = true;
             this.labelDataFinal.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F);
-            this.labelDataFinal.Location = new System.Drawing.Point(744, 53);
+            this.labelDataFinal.Location = new System.Drawing.Point(629, 53);
             this.labelDataFinal.Name = "labelDataFinal";
             this.labelDataFinal.Size = new System.Drawing.Size(78, 18);
             this.labelDataFinal.TabIndex = 7;
@@ -289,11 +291,31 @@
             this.chart6.Click += new System.EventHandler(this.chart6_Click);
             this.chart6.MouseMove += new System.Windows.Forms.MouseEventHandler(this.chart6_MouseMove);
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(1115, 52);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 18;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F);
+            this.label3.Location = new System.Drawing.Point(956, 54);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(153, 18);
+            this.label3.TabIndex = 19;
+            this.label3.Text = "ICAO Empresa Aérea:";
+            // 
             // DashboardVoos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1546, 827);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.chart6);
             this.Controls.Add(this.chart5);
             this.Controls.Add(this.labelFechar);
@@ -312,7 +334,7 @@
             this.Controls.Add(this.buttonImportar);
             this.Controls.Add(this.label1);
             this.Name = "DashboardVoos";
-            this.Text = "Form1";
+            this.Text = "Dashboard Voos";
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart3)).EndInit();
@@ -344,6 +366,8 @@
         private System.Windows.Forms.Label labelFechar;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart5;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart6;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Label label3;
     }
 }
 
