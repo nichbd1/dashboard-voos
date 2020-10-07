@@ -1,5 +1,4 @@
 ﻿using DashboardVoos.ObjetosVoos;
-using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,39 +6,54 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using ExcelDataReader;
+using System.Data.OleDb;
+using Microsoft.Office.Interop.Excel;
+using OfficeOpenXml;
 
 namespace DashboardVoos
 {
     public partial class DashboardVoos : Form
     {
+        bool firstClick;
         List<InformacoesVoos> voos = new List<InformacoesVoos>();
-        Point? prevPosition = null;
+        System.Drawing.Point? prevPosition = null;
         ToolTip tooltip = new ToolTip();
         string pastaSelecionada;
+
         public DashboardVoos()
         {
+            firstClick = true;
             InitializeComponent();
+            label2.Visible = false;
+            labelFechar.Visible = false;
+            this.MinimumSize = this.Size;
+            this.MaximumSize = this.Size;
+            importacao.Anchor = AnchorStyles.Bottom;
+            importacao.Anchor = AnchorStyles.Bottom;
+            buttonImportar.Anchor = (AnchorStyles.Bottom | AnchorStyles.Left);
+            GerarGrafico.Anchor = (AnchorStyles.Bottom | AnchorStyles.Left);
+            label1.Anchor = AnchorStyles.Top;
+            dataFinal.Anchor = AnchorStyles.Top;
+            dataInicial.Anchor = AnchorStyles.Top;
+            labelDataInicial.Anchor = AnchorStyles.Top;
+            labelDataFinal.Anchor = AnchorStyles.Top;
             chart1.Visible = false;
             chart2.Visible = false;
             chart3.Visible = false;
-            PopularDropdownGraficos();
+            chart4.Visible = false;
+            chart5.Visible = false;
+            chart6.Visible = false;
+            chart1.Titles.Add("Quantidade de voos por empresa aérea");
+            chart2.Titles.Add("Quantidade de voos por dia do mês");
+            chart3.Titles.Add("Situação dos voos");
+            chart4.Titles.Add("Atraso na decolagem");
+            chart5.Titles.Add("Atraso no pouso");
+            chart6.Titles.Add("Decolagens por aeroporto");
             backgroundWorker1.WorkerReportsProgress = true;
-        }
-
-        private void PopularDropdownGraficos()
-        {
-            comboBox1.DisplayMember = "nomeGrafico";
-            comboBox1.ValueMember = "idGrafico";
-            comboBox1.Items.Add("Quantidade de voos por empresa");
-            comboBox1.Items.Add("Quantidade de voos por dia do mês");
-            comboBox1.Items.Add("Quantidade de voos por situação");
-            comboBox1.Items.Add("Quantidade de voos atrasados");
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -60,8 +74,6 @@ namespace DashboardVoos
                 pastaSelecionada = dialog.FileName;
             }
             backgroundWorker1.RunWorkerAsync();
-            LabelResult.ForeColor = Color.Green;
-            chart1.Titles.Add("Quantidade de voos por período");
             return;
         }
 
@@ -100,6 +112,20 @@ namespace DashboardVoos
             };
             chart2.ChartAreas["ChartArea1"].AxisX.Interval = 1;
         }
+        private void PopularGrafico5(List<InformacoesVoos> voosDentroData)
+        {
+            foreach (var line in voosDentroData.GroupBy(info => info.atrasoChegada)
+                        .Select(group => new
+                        {
+                            Metric = group.Key,
+                            Count = group.Count()
+                        })
+                        .OrderBy(x => x.Metric))
+            {
+                chart5.Series["Quantidade de voos"].Points.AddXY(line.Metric, line.Count);
+            };
+            chart5.ChartAreas["ChartArea1"].AxisX.Interval = 1;
+        }
 
         private void PopularGrafico3(List<InformacoesVoos> voosDentroData)
         {
@@ -115,19 +141,47 @@ namespace DashboardVoos
                 chart3.Series["Situação"].Points.AddXY(line.Metric, line.Count);
             };
             chart3.Series["Situação"].ChartType = SeriesChartType.Pie;
+            chart3.Series["Situação"]["PieLabelStyle"] = "Disabled";
         }
 
         private void GerarGrafico_Click(object sender, EventArgs e)
         {
+            label2.Visible = true;
             List<InformacoesVoos> voosDentroData = voos.FindAll(x => x.partidaPrevista >= dataInicial.Value && x.partidaPrevista <= dataFinal.Value);
+            chart1.Visible = true;
+            chart2.Visible = true;
+            chart3.Visible = true;
+            chart4.Visible = true;
+            chart5.Visible = true;
+            chart6.Visible = true;
             chart1.Series["Empresa Aérea"].Points.Clear();
             chart2.Series["Dia do mês"].Points.Clear();
             chart3.Series["Situação"].Points.Clear();
             chart4.Series["Quantidade de voos"].Points.Clear();
+            chart5.Series["Quantidade de voos"].Points.Clear();
+            chart6.Series["Voos por Aeroporto"].Points.Clear();
             PopularGrafico1(voosDentroData);
             PopularGrafico2(voosDentroData);
             PopularGrafico3(voosDentroData);
             PopularGrafico4(voosDentroData);
+            PopularGrafico5(voosDentroData);
+            PopularGrafico6(voosDentroData);
+        }
+
+        private void PopularGrafico6(List<InformacoesVoos> voosDentroData)
+        {
+            foreach (var line in voosDentroData.GroupBy(info => info.ICAOAerodromoOrigem)
+                        .Select(group => new
+                        {
+                            Metric = group.Key,
+                            Count = group.Count()
+                        })
+                        .OrderBy(x => x.Metric))
+            {
+                chart6.Series["Voos por Aeroporto"].Points.AddXY(line.Metric, line.Count);
+            };
+            chart6.Series["Voos por Aeroporto"].ChartType = SeriesChartType.Pie;
+            chart6.Series["Voos por Aeroporto"]["PieLabelStyle"] = "Disabled";
         }
 
         private void PopularGrafico4(List<InformacoesVoos> voosDentroData)
@@ -173,7 +227,14 @@ namespace DashboardVoos
                 }
                 else if (file.EndsWith(".xlsx"))
                 {
-
+                    
+                    using (ExcelPackage xlPackage = new ExcelPackage(new System.IO.FileInfo(file)))
+                    {
+                        
+                        // get the first worksheet in the workbook
+                        ExcelWorksheet worksheet = xlPackage.Workbook.Worksheets[0];
+                        voos.AddRange(InformacoesVoos.FromXlsx(worksheet));
+                    }
                 }
                 backgroundWorker.ReportProgress((i * 100) / fileEntries.Length);
 
@@ -189,37 +250,6 @@ namespace DashboardVoos
             else
             {
                 System.Windows.Forms.MessageBox.Show("Importação executada com sucesso.");
-            }
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            switch (comboBox1.SelectedItem.ToString())
-            {
-                case "Quantidade de voos por empresa":
-                    chart1.Visible = true;
-                    chart2.Visible = false;
-                    chart3.Visible = false;
-                    chart4.Visible = false;
-                    break;
-                case "Quantidade de voos por dia do mês":
-                    chart1.Visible = false;
-                    chart2.Visible = true;
-                    chart3.Visible = false;
-                    chart4.Visible = false;
-                    break;
-                case "Quantidade de voos por situação":
-                    chart1.Visible = false;
-                    chart2.Visible = false;
-                    chart3.Visible = true;
-                    chart4.Visible = false;
-                    break;
-                case "Quantidade de voos atrasados":
-                    chart1.Visible = false;
-                    chart2.Visible = false;
-                    chart3.Visible = false;
-                    chart4.Visible = true;
-                    break;
             }
         }
 
@@ -314,6 +344,168 @@ namespace DashboardVoos
                         var pointXPixel = result.ChartArea.AxisX.ValueToPixelPosition(prop.XValue);
                         var pointYPixel = result.ChartArea.AxisY.ValueToPixelPosition(prop.YValues[0]);
                         tooltip.Show("Quantidade: " + prop.YValues[0], this.chart4, pos.X, pos.Y - 15);
+                    }
+                }
+            }
+        }
+
+        private void chart3_Click(object sender, EventArgs e)
+        {
+            if (firstClick)
+            {
+                chart3.Dock = DockStyle.Fill;
+                chart3.BringToFront();
+                firstClick = false;
+                labelFechar.Visible = true;
+                labelFechar.BringToFront();
+            }
+            else if (!firstClick)
+            {
+                chart3.Dock = DockStyle.None;
+                chart3.SendToBack();
+                firstClick = true;
+                labelFechar.Visible = false;
+            }
+        }
+
+        private void chart1_Click(object sender, EventArgs e)
+        {
+            if (firstClick)
+            {
+                chart1.Dock = DockStyle.Fill;
+                chart1.BringToFront();
+                firstClick = false;
+                labelFechar.Visible = true;
+                labelFechar.BringToFront();
+            }
+            else if (!firstClick)
+            {
+                chart1.Dock = DockStyle.None;
+                chart1.SendToBack();
+                firstClick = true;
+                labelFechar.Visible = false;
+            }
+        }
+
+        private void chart4_Click(object sender, EventArgs e)
+        {
+            if (firstClick)
+            {
+                chart4.Dock = DockStyle.Fill;
+                chart4.BringToFront();
+                firstClick = false;
+                labelFechar.Visible = true;
+                labelFechar.BringToFront();
+            }
+            else if (!firstClick)
+            {
+                chart4.Dock = DockStyle.None;
+                chart4.SendToBack();
+                firstClick = true;
+                labelFechar.Visible = false;
+            }
+        }
+
+        private void chart2_Click(object sender, EventArgs e)
+        {
+            if (firstClick)
+            {
+                chart2.Dock = DockStyle.Fill;
+                chart2.BringToFront();
+                firstClick = false;
+                labelFechar.Visible = true;
+                labelFechar.BringToFront();
+            }
+            else if (!firstClick)
+            {
+                chart2.Dock = DockStyle.None;
+                chart2.SendToBack();
+                firstClick = true;
+                labelFechar.Visible = false;
+            }
+        }
+
+        private void chart5_Click(object sender, EventArgs e)
+        {
+            if (firstClick)
+            {
+                chart5.Dock = DockStyle.Fill;
+                chart5.BringToFront();
+                firstClick = false;
+                labelFechar.Visible = true;
+                labelFechar.BringToFront();
+            }
+            else if (!firstClick)
+            {
+                chart5.Dock = DockStyle.None;
+                chart5.SendToBack();
+                firstClick = true;
+                labelFechar.Visible = false;
+            }
+        }
+
+        private void chart5_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (prevPosition.HasValue && pos == prevPosition.Value)
+                return;
+            tooltip.RemoveAll();
+            prevPosition = pos;
+            var results = chart5.HitTest(pos.X, pos.Y, false,
+                                            ChartElementType.DataPoint);
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var prop = result.Object as DataPoint;
+                    if (prop != null)
+                    {
+                        var pointXPixel = result.ChartArea.AxisX.ValueToPixelPosition(prop.XValue);
+                        var pointYPixel = result.ChartArea.AxisY.ValueToPixelPosition(prop.YValues[0]);
+                        tooltip.Show("Quantidade: " + prop.YValues[0], this.chart5, pos.X, pos.Y - 15);
+                    }
+                }
+            }
+        }
+
+        private void chart6_Click(object sender, EventArgs e)
+        {
+            if (firstClick)
+            {
+                chart6.Dock = DockStyle.Fill;
+                chart6.BringToFront();
+                firstClick = false;
+                labelFechar.Visible = true;
+                labelFechar.BringToFront();
+            }
+            else if (!firstClick)
+            {
+                chart6.Dock = DockStyle.None;
+                chart6.SendToBack();
+                firstClick = true;
+                labelFechar.Visible = false;
+            }
+        }
+
+        private void chart6_MouseMove(object sender, MouseEventArgs e)
+        {
+            var pos = e.Location;
+            if (prevPosition.HasValue && pos == prevPosition.Value)
+                return;
+            tooltip.RemoveAll();
+            prevPosition = pos;
+            var results = chart6.HitTest(pos.X, pos.Y, false,
+                                            ChartElementType.DataPoint);
+            foreach (var result in results)
+            {
+                if (result.ChartElementType == ChartElementType.DataPoint)
+                {
+                    var prop = result.Object as DataPoint;
+                    if (prop != null)
+                    {
+                        var pointXPixel = result.ChartArea.AxisX.ValueToPixelPosition(prop.XValue);
+                        var pointYPixel = result.ChartArea.AxisY.ValueToPixelPosition(prop.YValues[0]);
+                        tooltip.Show(prop.AxisLabel + ": " + prop.YValues[0], this.chart6, pos.X, pos.Y - 15);
                     }
                 }
             }
