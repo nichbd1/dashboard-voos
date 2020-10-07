@@ -411,23 +411,47 @@ namespace DashboardVoos
 
         private void graficoSituacao_Click(object sender, EventArgs e)
         {
-            if (firstClick)
+            var results = graficoSituacao.HitTest(((System.Windows.Forms.MouseEventArgs)e).X, ((System.Windows.Forms.MouseEventArgs)e).Y, false,
+                        ChartElementType.LegendItem);
+            if (results[0].Object != null && results[0].ChartElementType == ChartElementType.LegendItem)
             {
-                graficoSituacao.Dock = DockStyle.Fill;
-                graficoSituacao.BringToFront();
-                firstClick = false;
-                labelFechar.Visible = true;
-                labelFechar.BringToFront();
+                var points = graficoSituacao.Series[0].Points;
+                foreach (var point in points)
+                {
+                    if (results[0].Object != null && point.AxisLabel == ((System.Windows.Forms.DataVisualization.Charting.LegendItem)results[0].Object).Name)
+                    {
+                        point.BorderWidth = 2;
+                        point.BorderColor = Color.Black;
+                    }
+                    else
+                    {
+                        point.BorderWidth = 0;
+                    }
+                }
+
             }
-            else if (!firstClick)
+            else
             {
-                graficoSituacao.Dock = DockStyle.None;
-                graficoSituacao.SendToBack();
-                firstClick = true;
-                labelFechar.Visible = false;
+                if (firstClick)
+                {
+                    graficoSituacao.Dock = DockStyle.Fill;
+                    graficoSituacao.BringToFront();
+                    firstClick = false;
+                    labelFechar.Visible = true;
+                    labelFechar.BringToFront();
+                }
+                else if (!firstClick)
+                {
+                    graficoSituacao.Dock = DockStyle.None;
+                    graficoSituacao.SendToBack();
+                    firstClick = true;
+                    labelFechar.Visible = false;
+                    foreach (var point in graficoSituacao.Series[0].Points)
+                    {
+                        point.BorderWidth = 0;
+                    }
+                }
             }
-            var results = graficoAtrasoPartida.HitTest(((System.Windows.Forms.MouseEventArgs)e).X, ((System.Windows.Forms.MouseEventArgs)e).Y, false,
-                    ChartElementType.LegendItem);
         }
 
         private void graficoVoosPorEmpresa_Click(object sender, EventArgs e)
@@ -532,20 +556,41 @@ namespace DashboardVoos
 
         private void graficoVoosPorAeroporto_Click(object sender, EventArgs e)
         {
-            if (firstClick)
+            var results = graficoVoosPorAeroporto.HitTest(((System.Windows.Forms.MouseEventArgs)e).X, ((System.Windows.Forms.MouseEventArgs)e).Y, false,
+                        ChartElementType.LegendItem);
+            if (results[0].Object != null && results[0].ChartElementType == ChartElementType.LegendItem)
             {
-                graficoVoosPorAeroporto.Dock = DockStyle.Fill;
-                graficoVoosPorAeroporto.BringToFront();
-                firstClick = false;
-                labelFechar.Visible = true;
-                labelFechar.BringToFront();
+                var points = graficoVoosPorAeroporto.Series[0].Points;
+                foreach (var point in points)
+                {
+                    if (results[0].Object != null && point.AxisLabel == ((System.Windows.Forms.DataVisualization.Charting.LegendItem)results[0].Object).Name)
+                    {
+                        point.BorderWidth = 2;
+                        point.BorderColor = Color.Black;
+                    }
+                    else
+                    {
+                        point.BorderWidth = 0;
+                    }
+                }
             }
-            else if (!firstClick)
+            else
             {
-                graficoVoosPorAeroporto.Dock = DockStyle.None;
-                graficoVoosPorAeroporto.SendToBack();
-                firstClick = true;
-                labelFechar.Visible = false;
+                if (firstClick)
+                {
+                    graficoVoosPorAeroporto.Dock = DockStyle.Fill;
+                    graficoVoosPorAeroporto.BringToFront();
+                    firstClick = false;
+                    labelFechar.Visible = true;
+                    labelFechar.BringToFront();
+                }
+                else if (!firstClick)
+                {
+                    graficoVoosPorAeroporto.Dock = DockStyle.None;
+                    graficoVoosPorAeroporto.SendToBack();
+                    firstClick = true;
+                    labelFechar.Visible = false;
+                }
             }
         }
 

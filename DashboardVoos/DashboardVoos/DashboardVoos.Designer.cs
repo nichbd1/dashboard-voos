@@ -249,11 +249,12 @@
             this.labelFechar.AutoSize = true;
             this.labelFechar.BackColor = System.Drawing.SystemColors.Window;
             this.labelFechar.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelFechar.Location = new System.Drawing.Point(586, 0);
+            this.labelFechar.Location = new System.Drawing.Point(328, 0);
             this.labelFechar.Name = "labelFechar";
-            this.labelFechar.Size = new System.Drawing.Size(399, 18);
+            this.labelFechar.Size = new System.Drawing.Size(828, 18);
             this.labelFechar.TabIndex = 15;
-            this.labelFechar.Text = "Para voltar ao dashboard, clique na área externa do gráfico.";
+            this.labelFechar.Text = "Para voltar ao dashboard, clique na área externa do gráfico. Clique na legenda pa" +
+    "ra realçar a área correspondente do gráfico.";
             // 
             // graficoAtrasoChegada
             // 
